@@ -1,0 +1,165 @@
+\documentclass[12pt]{article}
+\usepackage{geometry}
+\geometry{a4paper, right=25mm, left=25mm, top=20mm, bottom=20mm}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage[svgnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{theorem}
+\usepackage{pdflscape}
+\usepackage{mathtools}
+\usepackage{setspace}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{indentfirst}
+\usepackage[none]{hyphenat}
+\usepackage{amssymb}
+\usepackage{multirow}
+\usepackage{natbib}
+\usepackage[final]{pdfpages}
+
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+	 colorlinks   = true,
+     citecolor    = purple,
+	 urlcolor	  = purple,
+	 linkcolor	  = purple
+	 }
+\usepackage{subfig}
+
+\setlength{\parindent}{2.5em}
+\setlength{\parskip}{0.8em}
+\renewcommand{\baselinestretch}{1.7}
+
+\DeclareMathOperator{\E}{\mathbb{E}}
+
+\usepackage{accents}
+\newcommand{\ubar}[1]{\underaccent{\bar}{#1}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{assumption}{Assumption}
+
+\newenvironment{proof}[1][Proof]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{definition}[1][Definition]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{example}[1][Example]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+\newcommand{\qed}{\nobreak \ifvmode \relax \else
+      \ifdim\lastskip<1.5em \hskip-\lastskip
+      \hskip1.5em plus0em minus0.5em \fi \nobreak
+      \vrule height0.75em width0.5em depth0.25em\fi}
+   
+\onehalfspacing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{\Large{\textbf{Metrics Class notes}} \\
+Class 2}
+
+\begin{document}
+
+\maketitle
+
+Last class we had 
+
+\begin{equation}
+	y_i = e(x_i, \epsilon_i, \beta) 
+\end{equation}
+	where $\epsilon_i \sim f(\cdot | x_i \gamma )$ and $\theta \equiv (\beta, \gamma)$. And we covered simulated NLS, which imply that the conditional mean of $y_i$ given $x_i$ is 
+	\begin{equation}
+		E[y_i | x_i; \theta] = \int e(x_i, \epsilon_i, \beta) f(\cdot | x_i \gamma ) d \epsilon_i 
+	\end{equation}
+	
+	Provided $\theta_0$ is identified from $E[y_i | x_i; \theta]$ then NLLS
+	
+	\begin{equation}
+		E[y - m(x;\theta)]^2 = E \{ E[y - m(x;\theta)]^2 | x \} = E \{ [m(x,\theta_0 - m(x; \theta)]^2 \} = 0
+	\end{equation}
+	
+	So, 
+	\begin{equation}
+		\hat{\theta}_{NLLS} = argmax \frac{1}{N} \sum^N_{i=1} [y_i - m(x_i; \theta)]^2
+	\end{equation}
+	
+	But this is \textbf{impractical}. First, $e()$ might be hard to compute itself (i.e. no closed for solution). Second, Integrating (2) can be hard if $\epsilon$ is multidimensional. It is \textbf{computational impossible} to approximate an integral with more than four dimensions.
+	
+	Note: If I want to integrate an univariate $\int_K f(x) dx$ over a compact set $K$, there is:
+	\begin{itemize}
+		\item Mathematical approximation: Solve it. 
+		\item Simmulation methods: $\int_K \frac{f(x)}{g(x)} g(x) dx \equiv E[f(x)/g(x)]$ if $x \sim g(\cdot)$. This can be approximated by $\frac{1}{S} \sum^S_{s=1} f(x_s)/g(x_s)$ where $x_s \sim g()$ iid. Note that the choice of $g()$ is important because it affects the noise of the simulated object.    
+	\end{itemize}
+	
+	Let's go back to our problem. We want a practical way to estimate $\epsilon_i \sim f(\cdot | x_i \gamma )$. Now is when simulation based methods become relevant. There were two cases where NLLS were impractical:
+	\begin{itemize}
+		\item $e(\cdot)$ tractable (closed form): SNLLS $m(x_i; \theta) \approx 1/S \sum^S e(, \epsilon_s ) \frac{f(\epsilon_{is} | x_i , \theta)}{ g(\epsilon_{is} | x_i} \equiv m^s(x_i,\theta)$ and $m_s(x_i,\theta) = e(, \epsilon_s ) \frac{f(\epsilon_{is} | x_i , \theta)}{ g(\epsilon_{is} | x_i}$. 
+		\begin{equation}
+			m(x_i;\theta) = \int e(x_i, \epsilon_i, \theta) d \epsilon_i = \int e(x_i, \epsilon_i, \theta) \frac{f(\epsilon_i | x_i, \theta)}{g(\epsilon_i | x_i)} g(\epsilon_i | x_i) d \epsilon_i
+		\end{equation}
+		where $\epsilon_i \sim g(\cdot | x_i)$ iid. Our first instinct is to do
+		\begin{equation}
+			min_\theta \frac{1}{N} [y_i - m^s(x_i, \theta)]^2
+		\end{equation}
+		\textbf{dont do this}. We should do, 
+		
+		\begin{equation}
+			min_\theta \frac{1}{N} \sum^N ( [y_i - m(x_i; \theta)]^2 - \frac{1}{S(S-1)} \sum^S_{s = 1} [m_s(x_i;\theta - m^S(x_i,\theta)]^2 )
+		\end{equation}
+	
+	\item $e(\cdot)$ intractable: We need an unbiased simulator of the mean. That is, $m(x,\theta) = E[u | x, \theta] = \int u f(u|x_i,\theta) du$ where $u \sim f(u|x_i,\theta)$ known (In the First Price Auction Paper this was the second highest valuation). 
+		\begin{equation}
+			m(x_i, \theta) \simeq \frac{1}{S} \sum^S_{s = 1} u_{is} \frac{f(u_{is} |x_i; \theta) }{g(u_{is} | x_{is} )} = m^s(x_i;\theta) 
+		\end{equation} 
+		
+		Notes: draws must be independent of $\theta$. 
+	\end{itemize}
+	
+	Givoanni's question: What about MLE? To do MLE we need the density of $e(\cdot)$. How can we compute $f(y_i|x_i;\theta)$? We need a lot, in a simple example 
+	\begin{eqnarray*}
+		y_i = exp(\epsilon_i) \, \epsilon_i \sim f(\cdot) \\
+		F_y(y) = Pr(y \leq y) = Pr[exp(\epsilon_i) \leq y] = Pr[\epsilon_i \leq log(y)] = F_\epsilon (log(y)) \\
+		\Rightarrow f_y (y) = \frac{1}{y} f_\epsilon(log(y))
+	\end{eqnarray*}
+	We need a jacobian... not funny. 
+	
+	\subsection{Pakes and Pollard}
+
+	We had our problem $y=e(x,\epsilon, \theta)$ where $\epsilon \sim f(\cdot | c; \gamma ) $, $\theta = (\beta , \gamma)$. We look at the first moment
+	\begin{equation}
+		E[y | x, \theta] = \int e(x, \epsilon, \beta) f(\epsilon | x, \gamma) d \epsilon \equiv m(x, \theta)
+	\end{equation}
+	
+	So, 
+	
+	\begin{equation}
+		E \{ y - m(x, \theta_0 )\} | x \} = 0 \Rightarrow E\{ \psi(x) [y - m(x, \theta_0 )] \} = 0 
+	\end{equation}
+	
+	which is that the conditional moment equal zero imply unconditional moments are equal to zero too. $\psi(x)$ are called instruments sometimes. We can write the RHS as
+	\begin{equation}
+		\int \psi(x) [y - m(x; \theta_0)] dP(y,x) = 0
+	\end{equation}
+	 Pakes and Pollard use the notation $G(\theta) = 0$, with $h(x,\theta) = \psi(x) [y - m(x; \theta_0)]$. But $h()$ is intractable. So we do 
+	 \begin{equation}
+	 	\hat{G}_N(\theta) \equiv \frac{1}{N} \sum^N_{i=1} h(x_i, \theta)
+	 \end{equation}
+	 and do GMM, 
+	 \begin{equation}
+	 	\hat{\theta}_{GMM} = argmin_{\theta} || \frac{1}{N} \sum^N_{i = 1} h(x_i; \theta) ||
+	 \end{equation}
+	 
+	 but $h$ is intractable! Lets simmulate stuff. In page 1028, the paper states
+	 \begin{equation}
+	 	h(x,\theta) = \int H(x, \xi, \theta ) P(d \xi | x) 
+	 \end{equation}
+\end{document}
