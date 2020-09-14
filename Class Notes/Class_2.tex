@@ -74,20 +74,21 @@ Class 2}
 Last class we had 
 
 \begin{equation}
-	y_i = e(x_i, \epsilon_i, \beta) 
+	y_i = e(x_i, \epsilon_i; \beta) 
 \end{equation}
-	where $\epsilon_i \sim f(\cdot | x_i \gamma )$ and $\theta \equiv (\beta, \gamma)$. And we covered simulated NLS, which imply that the conditional mean of $y_i$ given $x_i$ is 
+	where $\epsilon_i \sim f(\cdot | x_i; \gamma )$ and $\theta \equiv (\beta, \gamma)$. The conditional mean of $y_i$ given $x_i$ is 
 	\begin{equation}
-		E[y_i | x_i; \theta] = \int e(x_i, \epsilon_i, \beta) f(\cdot | x_i \gamma ) d \epsilon_i 
+		E[y_i | x_i; \theta] = \int e(x_i, \epsilon_i; \beta) f(\epsilon_i | x_i; \gamma ) d \epsilon_i 
+		\equiv m(x_i; \theta)
 	\end{equation}
 	
 	Provided $\theta_0$ is identified from $E[y_i | x_i; \theta]$ then NLLS
 	
 	\begin{equation}
-		E[y - m(x;\theta)]^2 = E \{ E[y - m(x;\theta)]^2 | x \} = E \{ [m(x,\theta_0 - m(x; \theta)]^2 \} = 0
+		E[y - m(x;\theta)]^2 = E \{ E[y - m(x;\theta)]^2 | x \} = E \{ [m(x,\theta_0 - m(x; \theta)]^2 \} \geq 0
 	\end{equation}
 	
-	So, 
+	Equality holds if and only if $\theta=\theta_0$. So, 
 	\begin{equation}
 		\hat{\theta}_{NLLS} = argmax \frac{1}{N} \sum^N_{i=1} [y_i - m(x_i; \theta)]^2
 	\end{equation}
