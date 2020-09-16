@@ -60,7 +60,7 @@
       \ifdim\lastskip<1.5em \hskip-\lastskip
       \hskip1.5em plus0em minus0.5em \fi \nobreak
       \vrule height0.75em width0.5em depth0.25em\fi}
-   
+
 \onehalfspacing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -71,96 +71,104 @@ Class 2}
 
 \maketitle
 
-Last class we had 
+Last class we had
 
 \begin{equation}
-	y_i = e(x_i, \epsilon_i; \beta) 
+	y_i = e(x_i, \epsilon_i; \beta)
 \end{equation}
-	where $\epsilon_i \sim f(\cdot | x_i; \gamma )$ and $\theta \equiv (\beta, \gamma)$. The conditional mean of $y_i$ given $x_i$ is 
+	where $\epsilon_i \sim f(\cdot | x_i; \gamma )$ and $\theta \equiv (\beta, \gamma)$. The conditional mean of $y_i$ given $x_i$ is
 	\begin{equation}
-		E[y_i | x_i; \theta] = \int e(x_i, \epsilon_i; \beta) f(\epsilon_i | x_i; \gamma ) d \epsilon_i 
+		E[y_i | x_i; \theta] = \int e(x_i, \epsilon_i; \beta) f(\epsilon_i | x_i; \gamma ) d \epsilon_i
 		\equiv m(x_i; \theta)
 	\end{equation}
-	
+
 	Provided $\theta_0$ is identified from $E[y_i | x_i; \theta]$ then NLLS
-	
+
 	\begin{equation}
-		E[y - m(x;\theta)]^2 = E \{ E[y - m(x;\theta)]^2 | x \} = E \{ [m(x,\theta_0 - m(x; \theta)]^2 \} \geq 0
+		E[y - m(x;\theta)]^2 = E \{ E[y - m(x;\theta)]^2 | x \} = E \{ [m(x;\theta_0) - m(x; \theta)]^2 \} \geq 0
 	\end{equation}
-	
-	Equality holds if and only if $\theta=\theta_0$. So, 
+
+	Equality holds if and only if $\theta=\theta_0$. So,
 	\begin{equation}
 		\hat{\theta}_{NLLS} = argmax \frac{1}{N} \sum^N_{i=1} [y_i - m(x_i; \theta)]^2
 	\end{equation}
-	
-	But this is \textbf{impractical}. First, $e()$ might be hard to compute itself (i.e. no closed for solution). Second, Integrating (2) can be hard if $\epsilon$ is multidimensional. It is \textbf{computational impossible} to approximate an integral with more than four dimensions.
-	
+
+	But this is \textbf{impractical}. First, $e()$ might be hard to compute itself (i.e. no closed form solution). Second, Integrating (2) can be hard if $\epsilon$ is multidimensional. It is \textbf{computational impossible} to approximate an integral with more than four dimensions.
+
 	Note: If I want to integrate an univariate $\int_K f(x) dx$ over a compact set $K$, there is:
 	\begin{itemize}
-		\item Mathematical approximation: Solve it. 
-		\item Simmulation methods: $\int_K \frac{f(x)}{g(x)} g(x) dx \equiv E[f(x)/g(x)]$ if $x \sim g(\cdot)$. This can be approximated by $\frac{1}{S} \sum^S_{s=1} f(x_s)/g(x_s)$ where $x_s \sim g()$ iid. Note that the choice of $g()$ is important because it affects the noise of the simulated object.    
+		\item Mathematical approximation: Solve it.
+		\item Simmulation methods: $\int_K \frac{f(x)}{g(x)} g(x) dx \equiv E[f(x)/g(x)]$ if $x \sim g(\cdot)$. This can be approximated by $\frac{1}{S} \sum^S_{s=1} f(x_s)/g(x_s)$ where $x_s \sim g(\cdot)$ iid. Note that the choice of $g(\cdot)$ is important because it affects the noise of the simulated object.
 	\end{itemize}
-	
-	Let's go back to our problem. We want a practical way to estimate $\epsilon_i \sim f(\cdot | x_i \gamma )$. Now is when simulation based methods become relevant. There were two cases where NLLS were impractical:
+
+	Let's go back to our problem. We want a practical way to estimate $\epsilon_i \sim f(\cdot | x_i; \gamma )$. Now is when simulation based methods become relevant. There were two cases where NLLS were impractical:
 	\begin{itemize}
-		\item $e(\cdot)$ tractable (closed form): SNLLS $m(x_i; \theta) \approx 1/S \sum^S e(, \epsilon_s ) \frac{f(\epsilon_{is} | x_i , \theta)}{ g(\epsilon_{is} | x_i} \equiv m^s(x_i,\theta)$ and $m_s(x_i,\theta) = e(, \epsilon_s ) \frac{f(\epsilon_{is} | x_i , \theta)}{ g(\epsilon_{is} | x_i}$. 
+		\item $e(\cdot)$ tractable (closed form): SNLLS
 		\begin{equation}
-			m(x_i;\theta) = \int e(x_i, \epsilon_i, \theta) d \epsilon_i = \int e(x_i, \epsilon_i, \theta) \frac{f(\epsilon_i | x_i, \theta)}{g(\epsilon_i | x_i)} g(\epsilon_i | x_i) d \epsilon_i
+		m(x_i; \theta) \approx \frac{1}{S} \sum^S e(x_i, \epsilon_{is};\theta) \frac{f(\epsilon_{is} | x_i ; \theta)}{ g(\epsilon_{is} | x_i)} \equiv m^s(x_i;\theta)
+		\end{equation}
+		 and $m_s(x_i;\theta) = e(\cdot, \epsilon_s ) \frac{f(\epsilon_{is} | x_i , \theta)}{ g(\epsilon_{is} | x_i)}$.
+		\begin{equation}
+			m(x_i;\theta) = \int e(x_i, \epsilon_i, \theta)f(\epsilon_i | x_i, \theta) d \epsilon_i = \int e(x_i, \epsilon_i, \theta) \frac{f(\epsilon_i | x_i, \theta)}{g(\epsilon_i | x_i)} g(\epsilon_i | x_i) d \epsilon_i
 		\end{equation}
 		where $\epsilon_i \sim g(\cdot | x_i)$ iid. Our first instinct is to do
 		\begin{equation}
-			min_\theta \frac{1}{N} [y_i - m^s(x_i, \theta)]^2
+			\min_{\theta} \frac{1}{N} [y_i - m^s(x_i, \theta)]^2
 		\end{equation}
-		\textbf{dont do this}. We should do, 
-		
+		\textbf{dont do this}. We should do,
+
 		\begin{equation}
-			min_\theta \frac{1}{N} \sum^N ( [y_i - m(x_i; \theta)]^2 - \frac{1}{S(S-1)} \sum^S_{s = 1} [m_s(x_i;\theta - m^S(x_i,\theta)]^2 )
+			\min_{\theta} \frac{1}{N} \sum_{i=1}^N { [y_i - m(x_i; \theta)]^2 - \frac{1}{S(S-1)} \sum^S_{s = 1} [m_s(x_i;\theta) - m^S(x_i,\theta)]^2 }
 		\end{equation}
-	
-	\item $e(\cdot)$ intractable: We need an unbiased simulator of the mean. That is, $m(x,\theta) = E[u | x, \theta] = \int u f(u|x_i,\theta) du$ where $u \sim f(u|x_i,\theta)$ known (In the First Price Auction Paper this was the second highest valuation). 
+
+	\item $e(\cdot)$ intractable: We need an \textbf{unbiased} simulator of the mean. That is,
+	\begin{equation}
+	 m(x,\theta) = E[u | x; \theta] = \int u f(u|x;\theta) du
+	 \end{equation}
+	  where $u \sim f(\cdot|x;\theta)$ known (In the First Price Auction Paper this was the second highest valuation).
 		\begin{equation}
-			m(x_i, \theta) \simeq \frac{1}{S} \sum^S_{s = 1} u_{is} \frac{f(u_{is} |x_i; \theta) }{g(u_{is} | x_{is} )} = m^s(x_i;\theta) 
-		\end{equation} 
-		
-		Notes: draws must be independent of $\theta$. 
+			m(x_i, \theta) \simeq \frac{1}{S} \sum^S_{s = 1} u_{is} \frac{f(u_{is} |x_i; \theta) }{g(u_{is} | x_{is} )} \equiv m^s(x_i;\theta)
+		\end{equation}
+
+		Notes: draws must be independent of $\theta$.
 	\end{itemize}
-	
-	Givoanni's question: What about MLE? To do MLE we need the density of $e(\cdot)$. How can we compute $f(y_i|x_i;\theta)$? We need a lot, in a simple example 
+
+	Givoanni's question: What about MLE? To do MLE we need the density of $e(\cdot)$. How can we compute $f(y_i|x_i;\theta)$? We need a lot, in a simple example
 	\begin{eqnarray*}
-		y_i = exp(\epsilon_i) \, \epsilon_i \sim f(\cdot) \\
+		y_i = exp(\epsilon_i). \ \epsilon_i \sim f(\cdot) \\
 		F_y(y) = Pr(y \leq y) = Pr[exp(\epsilon_i) \leq y] = Pr[\epsilon_i \leq log(y)] = F_\epsilon (log(y)) \\
 		\Rightarrow f_y (y) = \frac{1}{y} f_\epsilon(log(y))
 	\end{eqnarray*}
-	We need a jacobian... not funny. 
-	
+	We need a jacobian... not funny.
+
 	\subsection{Pakes and Pollard}
 
-	We had our problem $y=e(x,\epsilon, \theta)$ where $\epsilon \sim f(\cdot | c; \gamma ) $, $\theta = (\beta , \gamma)$. We look at the first moment
+	We had our problem $y=e(x,\epsilon, \beta)$ where $\epsilon \sim f(\cdot | x; \gamma ) $, $\theta = (\beta , \gamma)$. We look at the first moment
 	\begin{equation}
-		E[y | x, \theta] = \int e(x, \epsilon, \beta) f(\epsilon | x, \gamma) d \epsilon \equiv m(x, \theta)
+		E[y | x; \theta] = \int e(x, \epsilon; \beta) f(\epsilon | x; \gamma) d \epsilon \equiv m(x, \theta)
 	\end{equation}
-	
-	So, 
-	
+
+	So,
+
 	\begin{equation}
-		E \{ y - m(x, \theta_0 )\} | x \} = 0 \Rightarrow E\{ \psi(x) [y - m(x, \theta_0 )] \} = 0 
+		E \{ y - m(x; \theta_0 )\} | x \} = 0 \Rightarrow E\{ \psi(x) [y - m(x; \theta_0 )] \} = 0
 	\end{equation}
-	
+
 	which is that the conditional moment equal zero imply unconditional moments are equal to zero too. $\psi(x)$ are called instruments sometimes. We can write the RHS as
 	\begin{equation}
-		\int \psi(x) [y - m(x; \theta_0)] dP(y,x) = 0
+		\int \psi(x) [y - m(x; \theta)] dP(y,x) = 0 \iff \theta = \theta_0
 	\end{equation}
-	 Pakes and Pollard use the notation $G(\theta) = 0$, with $h(x,\theta) = \psi(x) [y - m(x; \theta_0)]$. But $h()$ is intractable. So we do 
+	 Pakes and Pollard use the notation $G(\theta) = \int h(x;\theta) dP(x)$, with $h(x;\theta) = \psi(x) [y - m(x; \theta)]$. And $G(\theta) = 0$ if and only if $\theta = \theta_0$. But $h(\cdot)$ is intractable. So we do
 	 \begin{equation}
 	 	\hat{G}_N(\theta) \equiv \frac{1}{N} \sum^N_{i=1} h(x_i, \theta)
 	 \end{equation}
-	 and do GMM, 
+	 and do GMM,
 	 \begin{equation}
-	 	\hat{\theta}_{GMM} = argmin_{\theta} || \frac{1}{N} \sum^N_{i = 1} h(x_i; \theta) ||
+	 	\hat{\theta}_{GMM} = \arg\min_{\theta} || \frac{1}{N} \sum^N_{i = 1} h(x_i; \theta) ||
 	 \end{equation}
-	 
+
 	 but $h$ is intractable! Lets simmulate stuff. In page 1028, the paper states
 	 \begin{equation}
-	 	h(x,\theta) = \int H(x, \xi, \theta ) P(d \xi | x) 
+	 	h(x,\theta) = \int H(x, \xi, \theta ) P(d \xi | x)
 	 \end{equation}
 \end{document}
